@@ -5,10 +5,3 @@ version = 3
 [[package]]
 name = "e-math"
 version = "0.1.0"
-
-[[package]]
-name = "e002"
-version = "0.1.0"
-dependencies = [
- "e-math",
-]
