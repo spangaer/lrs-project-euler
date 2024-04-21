@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::Duration};
+
 fn main() {
     const UPPER_BOUND: u64 = 4_000_000;
 
@@ -6,4 +8,10 @@ fn main() {
         .filter(|x| x % 2 == 0)
         .sum();
     println!("{}", res); //4613732
+
+    println!("{:#?}", e_math::generate::PRIMES_64K.clone());
+    println!();
+    println!("{}", e_math::generate::PRIMES_64K.len());
+    println!("{:?}", e_math::generate::PRIMES_64K.get(5000 - 1));
+    sleep(Duration::from_secs(1));
 }
