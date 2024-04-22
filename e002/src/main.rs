@@ -1,4 +1,7 @@
-use std::{thread::sleep, time::Duration};
+use std::{
+    thread::sleep,
+    time::{Duration, Instant},
+};
 
 fn main() {
     const UPPER_BOUND: u128 = 4_000_000;
@@ -9,15 +12,26 @@ fn main() {
         .sum();
     println!("{}", res); //4613732
 
-    println!("{:#?}", e_math::generate::PRIMES_64K.clone());
-    println!();
-    println!("{}", e_math::generate::PRIMES_64K.len());
-    println!("{:?}", e_math::generate::PRIMES_64K.get(5000 - 1));
+    {
+        let start = Instant::now();
 
-    let mut primes = e_math::generate::Primes::new();
-    let iter = primes.iterator();
+        // println!("{:#?}", e_math::generate::PRIMES_64K.clone());
+        // println!();
+        // println!("{}", e_math::generate::PRIMES_64K.len());
+        // println!("{:?}", e_math::generate::PRIMES_64K.get(5000 - 1));
 
-    iter.take(10).for_each(|p| println!("{}", p));
+        let mut primes = e_math::generate::Primes::new();
+        // let iter = primes.iterator();
+
+        // iter.take(10).for_each(|p| println!("{}", p));
+
+        let n: usize = 1_000_000;
+        println!("{}th prime is {}", n, primes.nth(n));
+
+        let end = Instant::now();
+
+        println!("duration: {}", (end - start).as_millis());
+    }
 
     sleep(Duration::from_secs(1));
 }
