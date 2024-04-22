@@ -11,7 +11,8 @@
         "vscode": {
             "extensions": [
                 "jbockle.jbockle-format-files",
-                "streetsidesoftware.code-spell-checker"
+                "streetsidesoftware.code-spell-checker",
+                "eamodio.gitlens"
             ]
         }
     }
