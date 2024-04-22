@@ -13,5 +13,11 @@ fn main() {
     println!();
     println!("{}", e_math::generate::PRIMES_64K.len());
     println!("{:?}", e_math::generate::PRIMES_64K.get(5000 - 1));
+
+    let mut primes = e_math::generate::Primes::new();
+    let iter = primes.iterator();
+
+    iter.take(10).for_each(|p| println!("{}", p));
+
     sleep(Duration::from_secs(1));
 }

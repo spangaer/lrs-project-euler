@@ -45,9 +45,43 @@ pub static PRIMES_64K: Lazy<Vec<u128>> = Lazy::new(|| {
     buffer
 });
 
-struct Primes {
+pub struct Primes {
     primes: Vec<u128>,
-    batch_complete: Vec<(u128, isize)>,
-    batch_running: Vec<(u128, isize)>,
+    // batch_running: Vec<(u128, usize)>,
     // workers
+}
+
+impl Primes {
+    pub fn new() -> Self {
+        Primes {
+            primes: PRIMES_256.clone(),
+            // batch_running: vec![],
+        }
+    }
+
+    pub fn get(self: &mut Self, index: usize) -> u128 {
+        // FIXME will run out of indices
+        self.primes[index]
+    }
+
+    pub fn iterator(self: &mut Self) -> PrimeIter {
+        PrimeIter {
+            primes: self,
+            index: 0,
+        }
+    }
+}
+
+pub struct PrimeIter<'a> {
+    primes: &'a mut Primes,
+    index: usize,
+}
+
+impl Iterator for PrimeIter<'_> {
+    type Item = u128;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.index += 1;
+        Some(self.primes.get(self.index))
+    }
 }
