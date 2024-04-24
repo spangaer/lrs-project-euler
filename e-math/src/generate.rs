@@ -10,8 +10,6 @@ use std::{
     u128,
 };
 
-use paste::paste;
-
 use once_cell::sync::Lazy;
 
 pub fn fibonacci() -> impl Iterator<Item = u128> {
@@ -26,52 +24,27 @@ pub fn fibonacci() -> impl Iterator<Item = u128> {
     })
 }
 
-/* Prime */
-macro_rules! sieve_for_ux {
-    ($T:ty) => {
-        paste! {
-            named_sieve_for_ux!([<sieve_ $T>],$T);
-        }
-    };
-}
-// 2 stage macro allows composing the name, with a macro, but doesn't brake formatting
-macro_rules! named_sieve_for_ux {
-    ($name:ident,$T:ty) => {
-        pub fn $name(cap: $T, primes: &[$T], range: RangeInclusive<$T>) -> Vec<$T> {
-            range
-                .filter(|n| {
-                    primes
-                        .iter()
-                        .take_while(|p| **p <= cap)
-                        .find(|p| n % *p == 0)
-                        .is_none()
-                })
-                .collect()
-        }
-    };
-}
-
-sieve_for_ux!(usize);
-sieve_for_ux!(u32);
-sieve_for_ux!(u64);
-sieve_for_ux!(u128);
-
+/* Primes */
 pub const PRIMES_16: [usize; 6] = [2, 3, 5, 7, 11, 13];
 
 static BATCH_64_K: usize = 256 * 256;
-static BACKLOG: usize = 4;
+static BACKLOG: usize = 8;
 
 pub static PRIMES_256: Lazy<Vec<usize>> = Lazy::new(|| {
     let mut buffer = Vec::new();
     buffer.extend_from_slice(&PRIMES_16);
-    buffer.append(&mut sieve_usize(16, &PRIMES_16, 17_usize..=256));
+    buffer.append(&mut Primes::<usize>::sieve(16, &PRIMES_16, 17_usize..=256));
     buffer
 });
 
 pub static PRIMES_64K: Lazy<Vec<usize>> = Lazy::new(|| {
     let mut buffer = Vec::new();
     buffer.extend_from_slice(&PRIMES_256);
-    buffer.append(&mut sieve_usize(256, &PRIMES_256, 257_usize..=BATCH_64_K));
+    buffer.append(&mut Primes::<usize>::sieve(
+        256,
+        &PRIMES_256,
+        257_usize..=BATCH_64_K,
+    ));
     buffer
 });
 
@@ -120,6 +93,18 @@ pub struct PrimeIter<'a, T> {
 macro_rules! impl_primes {
     ($T:ty) => {
         impl Primes<$T> {
+            pub fn sieve(cap: $T, primes: &[$T], range: RangeInclusive<$T>) -> Vec<$T> {
+                range
+                    .filter(|n| {
+                        primes
+                            .iter()
+                            .take_while(|p| **p <= cap)
+                            .find(|p| n % *p == 0)
+                            .is_none()
+                    })
+                    .collect()
+            }
+
             pub fn new() -> Self {
                 // initialize workers
                 let worker_count = max(std::thread::available_parallelism().unwrap().get() - 1, 1);
@@ -138,7 +123,7 @@ macro_rules! impl_primes {
                         while let Ok(PrimeCommand::Job(primes, cap, range)) =
                             command_receiver.recv()
                         {
-                            let new_primes = paste! {[<sieve_ $T>](cap, primes.as_ref(), range)};
+                            let new_primes = Primes::<$T>::sieve(cap, primes.as_ref(), range);
 
                             let _ = result_sender.send(PrimeResult {
                                 new_primes: new_primes,
@@ -151,8 +136,10 @@ macro_rules! impl_primes {
                     workers.push((t, command_sender, result_receiver));
                 }
 
+                let start_primes = PRIMES_64K.iter().map(|p| *p as $T).collect();
+
                 Primes {
-                    primes: Arc::new(PRIMES_64K.clone()),
+                    primes: Arc::new(start_primes),
                     complete: 1,
                     running: 1,
                     workers: workers,
@@ -186,7 +173,7 @@ macro_rules! impl_primes {
                     let next_batch = self.running + 1;
                     let cap = (next_batch as f64).sqrt().ceil() as $T * 256;
                     let range =
-                        (self.running as $T * BATCH_64_K + 1)..=(next_batch as $T * BATCH_64_K);
+                        (self.running * BATCH_64_K + 1) as $T..=(next_batch * BATCH_64_K) as $T;
                     let job = PrimeCommand::Job(self.primes.clone(), cap, range);
                     let _ = self.workers[next_batch % self.workers.len()].1.send(job);
                     self.running = next_batch;
@@ -244,3 +231,6 @@ macro_rules! impl_primes {
 }
 
 impl_primes!(usize);
+impl_primes!(u32);
+impl_primes!(u64);
+impl_primes!(u128);
