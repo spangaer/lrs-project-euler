@@ -20,10 +20,15 @@ fn main() {
         // println!("{}", e_math::generate::PRIMES_64K.len());
         // println!("{:?}", e_math::generate::PRIMES_64K.get(5000 - 1));
 
-        let mut primes = e_math::generate::Primes::new();
+        let mut primes = e_math::generate::Primes::<u64>::new();
         // let iter = primes.iterator();
 
         // iter.take(10).for_each(|p| println!("{}", p));
+
+        // cargo run --release
+        // 25000000th prime is 472882027
+        // duration: 61233
+        // let n: usize = 25_000_000;
 
         let n: usize = 1_000_000;
         println!("{}th prime is {}", n, primes.nth(n));

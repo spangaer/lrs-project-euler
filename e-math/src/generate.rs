@@ -27,31 +27,28 @@ pub fn fibonacci() -> impl Iterator<Item = u128> {
 /* Primes */
 pub const PRIMES_16: [usize; 6] = [2, 3, 5, 7, 11, 13];
 
-static BATCH_64_K: usize = 256 * 256;
-static BACKLOG: usize = 8;
+static BLOCK: usize = 256 * 256;
+static BATCH_BLOCKS: usize = 2;
+static BACKLOG: usize = 16;
 
 pub static PRIMES_256: Lazy<Vec<usize>> = Lazy::new(|| {
     let mut buffer = Vec::new();
     buffer.extend_from_slice(&PRIMES_16);
-    buffer.append(&mut Primes::<usize>::sieve(16, &PRIMES_16, 17_usize..=256));
+    buffer.append(&mut Primes::<usize>::sieve(&PRIMES_16, 17_usize..=256));
     buffer
 });
 
 pub static PRIMES_64K: Lazy<Vec<usize>> = Lazy::new(|| {
     let mut buffer = Vec::new();
     buffer.extend_from_slice(&PRIMES_256);
-    buffer.append(&mut Primes::<usize>::sieve(
-        256,
-        &PRIMES_256,
-        257_usize..=BATCH_64_K,
-    ));
+    buffer.append(&mut Primes::<usize>::sieve(&PRIMES_256, 257_usize..=BLOCK));
     buffer
 });
 
 enum PrimeCommand<T> {
     Stop,
-    /// primes, divider cap, batch
-    Job(Arc<Vec<T>>, T, RangeInclusive<T>),
+    /// primes, batch
+    Job(Arc<Vec<T>>, RangeInclusive<T>),
 }
 
 struct PrimeResult<T> {
@@ -93,14 +90,13 @@ pub struct PrimeIter<'a, T> {
 macro_rules! impl_primes {
     ($T:ty) => {
         impl Primes<$T> {
-            pub fn sieve(cap: $T, primes: &[$T], range: RangeInclusive<$T>) -> Vec<$T> {
+            pub fn sieve(primes: &[$T], range: RangeInclusive<$T>) -> Vec<$T> {
                 range
                     .filter(|n| {
-                        primes
+                        !primes
                             .iter()
-                            .take_while(|p| **p <= cap)
-                            .find(|p| n % *p == 0)
-                            .is_none()
+                            .take_while(|p| **p * **p <= *n)
+                            .any(|p| n % *p == 0)
                     })
                     .collect()
             }
@@ -120,10 +116,8 @@ macro_rules! impl_primes {
                     let (result_sender, result_receiver) = sync_channel::<PrimeResult<$T>>(BACKLOG);
 
                     let t = thread::spawn(move || {
-                        while let Ok(PrimeCommand::Job(primes, cap, range)) =
-                            command_receiver.recv()
-                        {
-                            let new_primes = Primes::<$T>::sieve(cap, primes.as_ref(), range);
+                        while let Ok(PrimeCommand::Job(primes, range)) = command_receiver.recv() {
+                            let new_primes = Primes::<$T>::sieve(primes.as_ref(), range);
 
                             let _ = result_sender.send(PrimeResult {
                                 new_primes: new_primes,
@@ -170,11 +164,9 @@ macro_rules! impl_primes {
             fn add_work(self: &mut Self) {
                 // giver every worker BACKLOG of work to do
                 while self.running - self.complete <= self.workers.len() * BACKLOG {
-                    let next_batch = self.running + 1;
-                    let cap = (next_batch as f64).sqrt().ceil() as $T * 256;
-                    let range =
-                        (self.running * BATCH_64_K + 1) as $T..=(next_batch * BATCH_64_K) as $T;
-                    let job = PrimeCommand::Job(self.primes.clone(), cap, range);
+                    let next_batch = self.running + BATCH_BLOCKS;
+                    let range = (self.running * BLOCK + 1) as $T..=(next_batch * BLOCK) as $T;
+                    let job = PrimeCommand::Job(self.primes.clone(), range);
                     let _ = self.workers[next_batch % self.workers.len()].1.send(job);
                     self.running = next_batch;
                 }
@@ -182,7 +174,7 @@ macro_rules! impl_primes {
 
             fn receive_work(self: &mut Self) {
                 let mut buffer = vec![];
-                let mut receive_counter = self.complete + 1;
+                let mut receive_counter = self.complete + BATCH_BLOCKS;
 
                 // single sync receive
                 buffer.push(
@@ -194,11 +186,12 @@ macro_rules! impl_primes {
                 ); //will drop first  prev_primes arc
 
                 // try to receive as much as possible in one go
-                while let Ok(res) = self.workers[(receive_counter + 1) % self.workers.len()]
-                    .2
-                    .try_recv()
+                while let Ok(res) = self.workers
+                    [(receive_counter + BATCH_BLOCKS) % self.workers.len()]
+                .2
+                .try_recv()
                 {
-                    receive_counter += 1;
+                    receive_counter += BATCH_BLOCKS;
                     buffer.push(res.new_primes);
                 }
 

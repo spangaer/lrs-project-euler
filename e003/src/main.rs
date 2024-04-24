@@ -1,7 +1,7 @@
 fn main() {
-    let mut primes = e_math::generate::Primes::new();
+    let mut primes = e_math::generate::Primes::<u64>::new();
 
-    let start: u128 = 600_851_475_143;
+    let start: u64 = 600_851_475_143;
 
     let iter = primes.iterator();
 
