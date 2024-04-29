@@ -299,14 +299,14 @@ macro_rules! impl_primes {
                 for i in 0..max_len {
                     factors
                         .iter()
-                        .map(|fr| fr.get(i).map(|f| f.clone()))
-                        .fold::<Option<($T, usize)>, _>(None, |current, other| {
+                        .map(|fr| fr.get(i))
+                        .fold::<Option<&($T, usize)>, _>(None, |current, other| {
                             match (current, other) {
                                 // if only one of either defined that wins
                                 // if both defined the larges wins
                                 (x, None) => x,
                                 (None, y) => y,
-                                (Some(x), Some(y)) if x.1 >= y.1 => current, // avoid new object
+                                (ox @ Some(x), Some(y)) if x.1 >= y.1 => ox, // avoid new object
                                 (_, y) => y,
                             }
                         })
