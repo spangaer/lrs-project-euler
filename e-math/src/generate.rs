@@ -90,19 +90,7 @@ pub struct PrimeIter<'a, T> {
 macro_rules! impl_primes {
     ($T:ty) => {
         impl Primes<$T> {
-            pub fn pow(x: $T, y: usize) -> $T {
-                if (y == 0) {
-                    1
-                } else {
-                    let mut res = x;
-                    for _ in 2..=y {
-                        res *= x;
-                    }
-                    res
-                }
-            }
-
-            pub fn log(x: $T, y: $T) -> usize {
+            pub fn log(x: $T, y: $T) -> u32 {
                 let mut res = 1;
                 let mut mult = y;
                 while (mult <= x) {
@@ -234,7 +222,7 @@ macro_rules! impl_primes {
                 // will drop the other previous prime arcs
             }
 
-            pub fn factorize(self: &mut Self, n: $T) -> Vec<($T, usize)> {
+            pub fn factorize(self: &mut Self, n: $T) -> Vec<($T, u32)> {
                 // this solution could cut short when state becomes smaller then p^2
                 self.factorize_with(n, false)
                     .iter()
@@ -243,11 +231,11 @@ macro_rules! impl_primes {
                     .collect()
             }
 
-            pub fn factorize_with_zeros(self: &mut Self, n: $T) -> Vec<($T, usize)> {
+            pub fn factorize_with_zeros(self: &mut Self, n: $T) -> Vec<($T, u32)> {
                 self.factorize_with(n, true)
             }
 
-            fn factorize_with(self: &mut Self, n: $T, zeros: bool) -> Vec<($T, usize)> {
+            fn factorize_with(self: &mut Self, n: $T, zeros: bool) -> Vec<($T, u32)> {
                 self.iterator()
                     .scan(n, |state, prime| match state {
                         state if *state == 1 => None,
@@ -300,7 +288,7 @@ macro_rules! impl_primes {
                     factors
                         .iter()
                         .map(|fr| fr.get(i))
-                        .fold::<Option<&($T, usize)>, _>(None, |current, other| {
+                        .fold::<Option<&($T, u32)>, _>(None, |current, other| {
                             match (current, other) {
                                 // if only one of either defined that wins
                                 // if both defined the larges wins
@@ -315,7 +303,7 @@ macro_rules! impl_primes {
                 }
 
                 lcm_factors.iter().fold(1 as $T, |current, (prime, pow)| {
-                    current * Primes::<$T>::pow(*prime, *pow)
+                    current * <$T>::pow(*prime, *pow)
                 })
             }
         }
