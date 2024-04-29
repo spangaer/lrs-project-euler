@@ -20,13 +20,14 @@ fn main() {
         }
     }
 
-    println!("{}", max);
+    println!("{}", max); //906609
 }
 
 fn is_palindrome(n: isize) -> bool {
     let string = format!("{}", n);
 
-    let half = string.len() / 2;
+    // let half = string.len() / 2; // given it's digits UTF8 is single byte
+    let half = string.chars().count() / 2; // more formally correct
     let odd = !(half * 2 == string.len());
 
     let mut stack = Vec::<char>::new();
