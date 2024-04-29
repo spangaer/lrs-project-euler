@@ -90,6 +90,29 @@ pub struct PrimeIter<'a, T> {
 macro_rules! impl_primes {
     ($T:ty) => {
         impl Primes<$T> {
+            pub fn pow(x: $T, y: usize) -> $T {
+                if (y == 0) {
+                    1
+                } else {
+                    let mut res = x;
+                    for _ in 2..=y {
+                        res *= x;
+                    }
+                    res
+                }
+            }
+
+            pub fn log(x: $T, y: $T) -> usize {
+                let mut res = 1;
+                let mut mult = y;
+                while (mult <= x) {
+                    mult *= y;
+                    res += 1;
+                }
+                // when we break out of the loop we're one to far
+                res - 1
+            }
+
             pub fn sieve(primes: &[$T], range: RangeInclusive<$T>) -> Vec<$T> {
                 range
                     .filter(|n| {
@@ -209,6 +232,57 @@ macro_rules! impl_primes {
                 self.primes = Arc::new(final_primes);
                 self.complete = receive_counter;
                 // will drop the other previous prime arcs
+            }
+
+            pub fn factorize(self: &mut Self, n: $T) -> Vec<($T, usize)> {
+                // this solution could cut short when state becomes smaller then p^2
+                self.factorize_with(n, false)
+                    .iter()
+                    .filter(|(_, e)| *e != 0)
+                    .map(|t| t.clone())
+                    .collect()
+            }
+
+            pub fn factorize_with_zeros(self: &mut Self, n: $T) -> Vec<($T, usize)> {
+                self.factorize_with(n, true)
+            }
+
+            fn factorize_with(self: &mut Self, n: $T, zeros: bool) -> Vec<($T, usize)> {
+                self.iterator()
+                    .scan(n, |state, prime| match state {
+                        state if *state == 1 => None,
+                        state if *state == prime => {
+                            let temp = *state;
+                            *state = 1;
+                            Some((temp, 1))
+                        } // current state is a prime
+                        state if *state < (prime * prime) => {
+                            if (zeros) {
+                                Some((prime, 0))
+                            } else {
+                                let temp = *state;
+                                *state = 1;
+                                Some((temp, 1))
+                            }
+                        }
+                        state => {
+                            let mut pow = 0;
+
+                            while (*state % prime == 0) {
+                                *state /= prime;
+                                pow += 1;
+                            }
+
+                            Some((prime, pow))
+                        }
+                    })
+                    .collect()
+            }
+
+            pub fn is_prime(self: &mut Self, x: $T) -> bool {
+                self.iterator()
+                    .take_while(|p| p * p <= x)
+                    .all(|p| x % p != 0)
             }
         }
 
