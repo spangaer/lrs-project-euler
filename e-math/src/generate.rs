@@ -306,7 +306,7 @@ macro_rules! impl_primes {
                                 // if both defined the larges wins
                                 (x, None) => x,
                                 (None, y) => y,
-                                (ox @ Some(x), Some(y)) if x.1 >= y.1 => ox, // avoid new object
+                                (ox @ Some((_, x)), Some((_, y))) if x >= y => ox, // avoid new object
                                 (_, y) => y,
                             }
                         })
