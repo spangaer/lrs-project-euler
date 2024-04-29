@@ -284,6 +284,40 @@ macro_rules! impl_primes {
                     .take_while(|p| p * p <= x)
                     .all(|p| x % p != 0)
             }
+
+            /// lcm is max power of each prime factor
+            pub fn lcm(self: &mut Self, numbers: &[$T]) -> $T {
+                let factors = numbers
+                    .iter()
+                    .map(|&n| self.factorize_with_zeros(n))
+                    .collect::<Vec<_>>();
+
+                let max_len = factors.iter().map(|fr| fr.len()).max().unwrap();
+
+                let mut lcm_factors = vec![];
+
+                for i in 0..max_len {
+                    factors
+                        .iter()
+                        .map(|fr| fr.get(i).map(|f| f.clone()))
+                        .fold::<Option<($T, usize)>, _>(None, |current, other| {
+                            match (current, other) {
+                                // if only one of either defined that wins
+                                // if both defined the larges wins
+                                (x, None) => x,
+                                (None, y) => y,
+                                (Some(x), Some(y)) if x.1 >= y.1 => current, // avoid new object
+                                (_, y) => y,
+                            }
+                        })
+                        .iter()
+                        .for_each(|&factor| lcm_factors.push(factor));
+                }
+
+                lcm_factors.iter().fold(1 as $T, |current, (prime, pow)| {
+                    current * Primes::<$T>::pow(*prime, *pow)
+                })
+            }
         }
 
         impl Iterator for PrimeIter<'_, $T> {
