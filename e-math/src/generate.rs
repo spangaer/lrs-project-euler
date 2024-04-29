@@ -25,11 +25,11 @@ pub fn fibonacci() -> impl Iterator<Item = u128> {
 }
 
 /* Primes */
-pub const PRIMES_16: [usize; 6] = [2, 3, 5, 7, 11, 13];
+pub static PRIMES_16: [usize; 6] = [2, 3, 5, 7, 11, 13];
 
-static BLOCK: usize = 256 * 256;
-static BATCH_BLOCKS: usize = 2;
-static BACKLOG: usize = 16;
+const BLOCK: usize = 256 * 256;
+const BATCH_BLOCKS: usize = 2;
+const BACKLOG: usize = 16;
 
 pub static PRIMES_256: Lazy<Vec<usize>> = Lazy::new(|| {
     let mut buffer = Vec::new();
