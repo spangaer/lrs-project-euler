@@ -2,24 +2,43 @@ use num_bigint::BigUint;
 use num_traits::Num;
 
 fn main() {
-    let numbers = numbers_in
-        .split('\n')
-        .map(|line| <BigUint as Num>::from_str_radix(line, 10).unwrap())
-        .collect::<Vec<_>>();
+    let big_int = false;
 
-    println!("{:#?}", numbers);
+    let res_str = if big_int {
+        let numbers = NUMBERS
+            .split('\n')
+            .map(|line| <BigUint as Num>::from_str_radix(line, 10).unwrap())
+            .collect::<Vec<_>>();
 
-    let res = numbers.iter().sum::<BigUint>();
+        println!("{:#?}", numbers);
 
-    let res_str = format!("{}", res);
+        let res = numbers.iter().sum::<BigUint>();
+        format!("{}", res)
+    } else {
+        // we can shove 20 digits in to a u64 for certain
+        // we only care for the first 10 in the result
+        // so using the first  17 digit will likely be precise enough (for summation)
+        // taking in to account that we add 100 numbers, so we wouldn't grow more then 3 digits
+
+        let numbers = NUMBERS
+            .split('\n')
+            .map(|line| u64::from_str_radix(&line[..17], 10).unwrap())
+            .collect::<Vec<_>>();
+
+        println!("{:#?}", numbers);
+
+        let res = numbers.iter().sum::<u64>();
+        format!("{}", res)
+    };
 
     //full: 5537376230390876637302048746832985971773659831892672
+    //full: 5537376230390876587
     println!("full: {}", res_str);
     // clipped: 5537376230
     println!("clipped: {}", &res_str[..10]);
 }
 
-const numbers_in: &str = "\
+const NUMBERS: &str = "\
     37107287533902102798797998220837590246510135740250\n\
     46376937677490009712648124896970078050417018260538\n\
     74324986199524741059474233309513058123726617309629\n\
