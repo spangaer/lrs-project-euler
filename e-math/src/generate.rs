@@ -151,7 +151,7 @@ macro_rules! impl_primes {
                 }
             }
 
-            pub fn nth(self: &mut Self, n: usize) -> $T {
+            pub fn nth(&mut self, n: usize) -> $T {
                 while self.primes.len() < n {
                     self.grow();
                 }
@@ -159,20 +159,20 @@ macro_rules! impl_primes {
                 self.primes[n - 1]
             }
 
-            pub fn iterator(self: &mut Self) -> PrimeIter<$T> {
+            pub fn iterator(&mut self) -> PrimeIter<$T> {
                 PrimeIter {
                     primes: self,
                     index: 0,
                 }
             }
 
-            fn grow(self: &mut Self) {
+            fn grow(&mut self) {
                 self.add_work(); // ensure there will be something to receive
                 self.receive_work(); // receive
                 self.add_work(); // ensure there will be something to pick up immediately next time
             }
 
-            fn add_work(self: &mut Self) {
+            fn add_work(&mut self) {
                 // giver every worker BACKLOG of work to do
                 while self.running - self.complete <= self.workers.len() * BACKLOG {
                     let next_batch = self.running + BATCH_BLOCKS;
@@ -183,7 +183,7 @@ macro_rules! impl_primes {
                 }
             }
 
-            fn receive_work(self: &mut Self) {
+            fn receive_work(&mut self) {
                 let mut buffer = vec![];
                 let mut receive_counter = self.complete + BATCH_BLOCKS;
 
@@ -222,7 +222,7 @@ macro_rules! impl_primes {
                 // will drop the other previous prime arcs
             }
 
-            pub fn factorize(self: &mut Self, n: $T) -> Vec<($T, u32)> {
+            pub fn factorize(&mut self, n: $T) -> Vec<($T, u32)> {
                 // this solution could cut short when state becomes smaller then p^2
                 self.factorize_with(n, false)
                     .iter()
@@ -231,11 +231,11 @@ macro_rules! impl_primes {
                     .collect()
             }
 
-            pub fn factorize_with_zeros(self: &mut Self, n: $T) -> Vec<($T, u32)> {
+            pub fn factorize_with_zeros(&mut self, n: $T) -> Vec<($T, u32)> {
                 self.factorize_with(n, true)
             }
 
-            fn factorize_with(self: &mut Self, n: $T, zeros: bool) -> Vec<($T, u32)> {
+            fn factorize_with(&mut self, n: $T, zeros: bool) -> Vec<($T, u32)> {
                 self.iterator()
                     .scan(n, |state, prime| match state {
                         state if *state == 1 => None,
@@ -267,14 +267,14 @@ macro_rules! impl_primes {
                     .collect()
             }
 
-            pub fn is_prime(self: &mut Self, x: $T) -> bool {
+            pub fn is_prime(&mut self, x: $T) -> bool {
                 self.iterator()
                     .take_while(|p| p * p <= x)
                     .all(|p| x % p != 0)
             }
 
             /// lcm is max power of each prime factor
-            pub fn lcm(self: &mut Self, numbers: &[$T]) -> $T {
+            pub fn lcm(&mut self, numbers: &[$T]) -> $T {
                 let factors = numbers
                     .iter()
                     .map(|&n| self.factorize_with_zeros(n))
