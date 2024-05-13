@@ -3,8 +3,6 @@ use std::iter;
 use e_math::generate::Primes;
 
 fn main() {
-    let mut i = 0_u64;
-
     let mut primes = Primes::<u64>::new();
 
     let mut factors = |x: u64| {
@@ -21,6 +19,8 @@ fn main() {
             .map(|fact| fact.1 + 1)
             .product::<u32>()
     };
+
+    let mut i = 0_u64;
 
     let triangle = iter::from_fn(|| {
         i += 1;
