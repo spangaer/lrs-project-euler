@@ -1,5 +1,5 @@
 fn main() {
-    let mut primes = e_math::generate::Primes::<u64>::new();
+    let mut primes = e_math::primes::Primes::<u64>::new();
 
     let start: u64 = 600_851_475_143;
 

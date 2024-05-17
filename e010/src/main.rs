@@ -1,4 +1,4 @@
-use e_math::generate::Primes;
+use e_math::primes::Primes;
 
 fn main() {
     let mut primes = Primes::<u64>::new();
