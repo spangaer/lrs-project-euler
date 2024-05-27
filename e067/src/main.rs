@@ -1,3 +1,11 @@
+use std::fs::File;
+use std::fs::{metadata, read_to_string};
+use std::io::copy;
+use std::path::Path;
+use std::result::Result;
+use std::time::Duration;
+use std::{io, thread};
+
 fn main() {
     let input = input();
 
@@ -28,35 +36,73 @@ fn main() {
         .max()
         .unwrap();
 
-    println!("{}", res);
+    thread::sleep(Duration::from_secs(1));
+
+    println!("{}", res); //7273
 }
 
 fn input() -> Vec<Vec<u64>> {
-    todo!("get input from https://projecteuler.net/resources/documents/0067_triangle.txt")
-    let input = "\
-        75\n\
-        95 64\n\
-        17 47 82\n\
-        18 35 87 10\n\
-        20 04 82 47 65\n\
-        19 01 23 75 03 34\n\
-        88 02 77 73 07 63 67\n\
-        99 65 04 28 06 16 70 92\n\
-        41 41 26 56 83 40 80 70 33\n\
-        41 48 72 33 47 32 37 16 94 29\n\
-        53 71 44 65 25 43 91 52 97 51 14\n\
-        70 11 33 28 77 73 17 78 39 68 17 57\n\
-        91 71 52 38 17 14 91 43 58 50 27 29 48\n\
-        63 66 04 68 89 53 67 30 73 16 69 87 40 31\n\
-        04 62 98 27 23 09 70 98 73 93 38 53 60 04 23\
-    ";
+    let file_path = Path::new("triangle.txt");
+
+    let file_size = match metadata(file_path) {
+        Ok(meta) => meta.len(),
+        Err(_) => 0_u64,
+    };
+
+    if file_size <= 0 {
+        let _ = download_file(
+            "https://projecteuler.net/resources/documents/0067_triangle.txt",
+            file_path,
+        )
+        .expect("failed to download");
+    }
+
+    let input = read_to_string(file_path).unwrap();
 
     input
         .split('\n')
+        .filter(|line| line.len() > 0)
         .map(|line| {
             line.split(' ')
                 .map(|digits| u64::from_str_radix(digits, 10).unwrap())
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>()
+}
+
+fn download_file(url: &str, file_path: &Path) -> Result<(), LocalError> {
+    // Perform the HTTP GET request
+    let response = reqwest::blocking::get(url)?;
+
+    // Ensure the request was successful
+    if !response.status().is_success() {
+        panic!("Error: {}", response.status());
+    }
+
+    // Open a file to write the downloaded data
+    let mut file = File::create(file_path)?;
+
+    // Copy the response body to the file
+    copy(&mut response.bytes().unwrap().as_ref(), &mut file)?;
+
+    Ok(())
+}
+
+/// Allow merging 2 error types in to one using implicit conversion
+#[derive(Debug)]
+enum LocalError {
+    RError(reqwest::Error),
+    IOError(io::Error),
+}
+
+impl From<io::Error> for LocalError {
+    fn from(err: io::Error) -> Self {
+        LocalError::IOError(err)
+    }
+}
+
+impl From<reqwest::Error> for LocalError {
+    fn from(err: reqwest::Error) -> Self {
+        LocalError::RError(err)
+    }
 }
