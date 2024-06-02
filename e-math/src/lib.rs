@@ -1,3 +1,4 @@
+pub mod num;
 pub mod primes;
 
 pub fn fibonacci() -> impl Iterator<Item = u128> {
