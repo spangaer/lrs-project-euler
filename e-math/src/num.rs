@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Mul, Sub};
 
 use num_integer::Integer;
 
@@ -17,4 +17,20 @@ pub fn digit_sum<I: Integer + Clone + Add<I> + Add<u32, Output = I>>(i: &I) -> I
     }
 
     sum
+}
+
+pub fn faculty<I: Integer + Clone + Mul<I> + Add<u32, Output = I> + Sub<u32, Output = I>>(
+    i: &I,
+) -> I {
+    let zero = I::zero();
+
+    let mut prod = I::zero() + 1;
+    let mut n = i.clone();
+
+    while n > zero {
+        prod = prod * n.clone();
+        n = n - 1;
+    }
+
+    prod
 }
