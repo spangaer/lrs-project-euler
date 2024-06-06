@@ -1,7 +1,7 @@
-use e_math::primes::Primes;
+use e_math::primesg::Primes;
 
 fn main() {
-    let mut primes = Primes::<usize>::new();
+    let mut primes = Primes::<u64>::new();
 
     let res = primes.nth(10001);
 

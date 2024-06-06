@@ -1,7 +1,7 @@
-use e_math::primes::Primes;
+use e_math::primesg::Primes;
 
 fn main() {
-    let i = 20_usize;
+    let i = 20_u64;
 
     // println!("{}", Primes::<usize>::pow(2, 3));
     // println!("{}", Primes::<usize>::log(20, 2));
@@ -9,7 +9,7 @@ fn main() {
     // println!("{}", Primes::<usize>::log(100, 10));
     // println!("{}", Primes::<usize>::log(1000, 10));
 
-    let mut primes = Primes::<usize>::new();
+    let mut primes = Primes::<u64>::new();
 
     for x in 2..=20 {
         println!("{}: {:?}", x, primes.factorize_with_zeros(x));

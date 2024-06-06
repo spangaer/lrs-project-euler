@@ -1,5 +1,6 @@
 pub mod num;
-pub mod primes;
+pub mod primesg;
+pub mod primesm;
 
 pub fn fibonacci() -> impl Iterator<Item = u128> {
     let mut prev: u128 = 0;
