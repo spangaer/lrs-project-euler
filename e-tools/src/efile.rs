@@ -2,6 +2,7 @@ use std::fs::metadata;
 use std::fs::File;
 use std::io;
 use std::io::copy;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::result::Result;
 
@@ -53,4 +54,12 @@ impl From<reqwest::Error> for EFileError {
     fn from(err: reqwest::Error) -> Self {
         EFileError::RError(err)
     }
+}
+
+pub fn file_lines(file_path: &Path) -> Result<Vec<String>, io::Error> {
+    let f = File::open(file_path)?;
+
+    let reader = BufReader::new(f);
+
+    reader.lines().collect()
 }

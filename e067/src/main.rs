@@ -1,5 +1,5 @@
-use e_tools::efile::make_available;
-use std::fs::read_to_string;
+use e_tools::efile::{file_lines, make_available};
+
 use std::path::Path;
 use std::thread;
 use std::time::Duration;
@@ -48,10 +48,10 @@ fn input() -> Vec<Vec<u64>> {
     )
     .unwrap();
 
-    let input = read_to_string(file_path).unwrap();
+    let input = file_lines(file_path).unwrap();
 
     input
-        .split('\n')
+        .iter()
         .filter(|line| line.len() > 0)
         .map(|line| {
             line.split(' ')
