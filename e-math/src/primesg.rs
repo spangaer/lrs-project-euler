@@ -1,7 +1,7 @@
 use std::{
     cmp::{max, Ord},
     iter::Iterator,
-    ops::{Add, Div, Mul, RangeInclusive, Rem},
+    ops::RangeInclusive,
     sync::{
         mpsc::{sync_channel, Receiver, SyncSender},
         Arc,
@@ -9,6 +9,7 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+use num::Num;
 use once_cell::sync::Lazy;
 
 /* Primes */
@@ -70,29 +71,10 @@ impl<T> Drop for Primes<T> {
     }
 }
 
-impl<
-        T: Copy
-            + Add<Output = T>
-            + Mul<Output = T>
-            + Div<Output = T>
-            + Rem<Output = T>
-            + From<u32>
-            + TryFrom<usize>
-            + Ord
-            + Send
-            + Sync
-            + 'static,
-    > Primes<T>
+impl<T: Num + Ord + Copy + From<u32> + TryFrom<usize> + Send + Sync + 'static> Primes<T>
 where
     <T as TryFrom<usize>>::Error: std::fmt::Debug,
 {
-    fn zero() -> T {
-        0.into()
-    }
-    fn one() -> T {
-        1.into()
-    }
-
     pub fn log(x: T, y: T) -> u32 {
         let mut res: u32 = 1;
         let mut mult = y;
@@ -110,7 +92,7 @@ where
         std::iter::from_fn(move || {
             if range.contains(&n) {
                 let temp = n;
-                n = n + Self::one();
+                n = n + T::one();
                 Some(temp)
             } else {
                 None
@@ -124,7 +106,7 @@ where
                 !primes
                     .iter()
                     .take_while(|p| **p * **p <= *n)
-                    .any(|p| (*n) % *p == Self::zero())
+                    .any(|p| (*n) % *p == T::zero())
             })
             .collect()
     }
@@ -253,10 +235,10 @@ where
     fn factorize_with(&mut self, n: T, zeros: bool) -> Vec<(T, u32)> {
         self.iterator()
             .scan(n, |state, prime| match state {
-                state if *state == Self::one() => None,
+                state if *state == T::one() => None,
                 state if *state == prime => {
                     let temp = *state;
-                    *state = Self::one();
+                    *state = T::one();
                     Some((temp, 1))
                 } // current state is a prime
                 state if *state < (prime * prime) => {
@@ -264,14 +246,14 @@ where
                         Some((prime, 0))
                     } else {
                         let temp = *state;
-                        *state = Self::one();
+                        *state = T::one();
                         Some((temp, 1))
                     }
                 }
                 state => {
                     let mut pow = 0;
 
-                    while *state % prime == Self::zero() {
+                    while *state % prime == T::zero() {
                         *state = *state / prime;
                         pow += 1;
                     }
@@ -285,11 +267,11 @@ where
     pub fn is_prime(&mut self, x: T) -> bool {
         self.iterator()
             .take_while(|&p| p * p <= x)
-            .all(|p| x % p != Self::zero())
+            .all(|p| x % p != T::zero())
     }
 
     fn pow(t: T, exp: u32) -> T {
-        (0..exp).fold(Self::one(), |acc, _| acc * t)
+        (0..exp).fold(T::one(), |acc, _| acc * t)
     }
 
     /// lcm is max power of each prime factor
@@ -321,11 +303,9 @@ where
                 .for_each(|&factor| lcm_factors.push(factor));
         }
 
-        lcm_factors
-            .iter()
-            .fold(Self::one(), |current, (prime, pow)| {
-                current * Self::pow(*prime, *pow)
-            })
+        lcm_factors.iter().fold(T::one(), |current, (prime, pow)| {
+            current * Self::pow(*prime, *pow)
+        })
     }
 }
 
@@ -334,19 +314,8 @@ pub struct PrimeIter<'a, T> {
     index: usize,
 }
 
-impl<
-        T: Copy
-            + Add<Output = T>
-            + Mul<Output = T>
-            + Div<Output = T>
-            + Rem<Output = T>
-            + From<u32>
-            + TryFrom<usize>
-            + Ord
-            + Send
-            + Sync
-            + 'static,
-    > Iterator for PrimeIter<'_, T>
+impl<T: Num + Copy + From<u32> + TryFrom<usize> + Ord + Send + Sync + 'static> Iterator
+    for PrimeIter<'_, T>
 where
     <T as TryFrom<usize>>::Error: std::fmt::Debug,
 {
