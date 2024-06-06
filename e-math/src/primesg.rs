@@ -307,6 +307,27 @@ where
             current * Self::pow(*prime, *pow)
         })
     }
+
+    fn compute_divisors(series: &[(T, u32)]) -> Vec<T> {
+        match series.len() {
+            0 => vec![T::one()],
+            _ => {
+                let deeper = Self::compute_divisors(&series[1..]);
+                let (prime, exp) = series[0];
+                let local = (0..=exp).map(|e| Self::pow(prime, e)).collect::<Vec<_>>();
+                deeper
+                    .iter()
+                    .flat_map(|n1| local.iter().map(|n2| *n1 * *n2))
+                    .collect()
+            }
+        }
+    }
+
+    pub fn divisors(&mut self, n: T) -> Vec<T> {
+        let prime_factors = self.factorize(n);
+
+        Self::compute_divisors(&prime_factors)
+    }
 }
 
 pub struct PrimeIter<'a, T> {
