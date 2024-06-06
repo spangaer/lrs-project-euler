@@ -1,10 +1,8 @@
-use std::fs::File;
-use std::fs::{metadata, read_to_string};
-use std::io::copy;
+use e_tools::efile::make_available;
+use std::fs::read_to_string;
 use std::path::Path;
-use std::result::Result;
+use std::thread;
 use std::time::Duration;
-use std::{io, thread};
 
 fn main() {
     let input = input();
@@ -44,18 +42,11 @@ fn main() {
 fn input() -> Vec<Vec<u64>> {
     let file_path = Path::new("triangle.txt");
 
-    let file_size = match metadata(file_path) {
-        Ok(meta) => meta.len(),
-        Err(_) => 0_u64,
-    };
-
-    if file_size <= 0 {
-        let _ = download_file(
-            "https://projecteuler.net/resources/documents/0067_triangle.txt",
-            file_path,
-        )
-        .expect("failed to download");
-    }
+    let _ = make_available(
+        "https://projecteuler.net/resources/documents/0067_triangle.txt",
+        file_path,
+    )
+    .unwrap();
 
     let input = read_to_string(file_path).unwrap();
 
@@ -68,41 +59,4 @@ fn input() -> Vec<Vec<u64>> {
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>()
-}
-
-fn download_file(url: &str, file_path: &Path) -> Result<(), LocalError> {
-    // Perform the HTTP GET request
-    let response = reqwest::blocking::get(url)?;
-
-    // Ensure the request was successful
-    if !response.status().is_success() {
-        panic!("Error: {}", response.status());
-    }
-
-    // Open a file to write the downloaded data
-    let mut file = File::create(file_path)?;
-
-    // Copy the response body to the file
-    copy(&mut response.bytes().unwrap().as_ref(), &mut file)?;
-
-    Ok(())
-}
-
-/// Allow merging 2 error types in to one using implicit conversion
-#[derive(Debug)]
-enum LocalError {
-    RError(reqwest::Error),
-    IOError(io::Error),
-}
-
-impl From<io::Error> for LocalError {
-    fn from(err: io::Error) -> Self {
-        LocalError::IOError(err)
-    }
-}
-
-impl From<reqwest::Error> for LocalError {
-    fn from(err: reqwest::Error) -> Self {
-        LocalError::RError(err)
-    }
 }
