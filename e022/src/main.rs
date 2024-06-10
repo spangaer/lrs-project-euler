@@ -2,13 +2,9 @@ use e_tools::efile::{file_lines, make_available};
 use std::path::Path;
 
 fn main() {
-    let alphabet = (b'A'..=b'Z').map(|c| c as char).collect::<Vec<_>>();
+    let base = (b'A' - 1) as usize;
 
-    let worth = |s: &str| {
-        s.chars()
-            .map(|c| alphabet.iter().position(|&a| a == c).unwrap() + 1)
-            .sum::<usize>()
-    };
+    let worth = |s: &str| s.chars().map(|c| c as usize - base).sum::<usize>();
 
     println!("{}", worth("COLIN"));
 
@@ -28,7 +24,7 @@ fn main() {
 }
 
 fn input() -> Vec<String> {
-    let file_path = Path::new("names.txt");
+    let file_path = Path::new("e022/names.txt");
 
     let _ = make_available(
         "https://projecteuler.net/resources/documents/0022_names.txt",
