@@ -1,5 +1,5 @@
 use std::{
-    cmp::{max, Ord},
+    cmp::max,
     iter::Iterator,
     ops::RangeInclusive,
     sync::{
@@ -9,7 +9,7 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-use num::Num;
+use num::Integer;
 use once_cell::sync::Lazy;
 
 /* Primes */
@@ -71,7 +71,7 @@ impl<T> Drop for Primes<T> {
     }
 }
 
-impl<T: Num + Ord + Copy + From<u32> + TryFrom<usize> + Send + Sync + 'static> Primes<T>
+impl<T: Integer + Copy + From<u32> + TryFrom<usize> + Send + Sync + 'static> Primes<T>
 where
     <T as TryFrom<usize>>::Error: std::fmt::Debug,
 {
@@ -335,7 +335,7 @@ pub struct PrimeIter<'a, T> {
     index: usize,
 }
 
-impl<T: Num + Copy + From<u32> + TryFrom<usize> + Ord + Send + Sync + 'static> Iterator
+impl<T: Integer + Copy + From<u32> + TryFrom<usize> + Send + Sync + 'static> Iterator
     for PrimeIter<'_, T>
 where
     <T as TryFrom<usize>>::Error: std::fmt::Debug,

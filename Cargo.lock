@@ -144,6 +144,7 @@ dependencies = [
 name = "e-tools"
 version = "0.1.0"
 dependencies = [
+ "humantime",
  "reqwest",
 ]
 
@@ -290,6 +291,15 @@ name = "e024"
 version = "0.1.0"
 dependencies = [
  "humantime",
+]
+
+[[package]]
+name = "e025"
+version = "0.1.0"
+dependencies = [
+ "e-math",
+ "e-tools",
+ "num-bigint",
 ]
 
 [[package]]

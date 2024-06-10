@@ -6,7 +6,7 @@ use std::{
 fn main() {
     const UPPER_BOUND: u128 = 4_000_000;
 
-    let res: u128 = e_math::fibonacci()
+    let res: u128 = e_math::num::fibonacci::<u128>()
         .take_while(|x| *x <= UPPER_BOUND)
         .filter(|x| x % 2 == 0)
         .sum();
