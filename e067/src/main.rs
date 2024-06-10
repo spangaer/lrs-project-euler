@@ -40,7 +40,7 @@ fn main() {
 }
 
 fn input() -> Vec<Vec<u64>> {
-    let file_path = Path::new("triangle.txt");
+    let file_path = Path::new("e067/triangle.txt");
 
     let _ = make_available(
         "https://projecteuler.net/resources/documents/0067_triangle.txt",
