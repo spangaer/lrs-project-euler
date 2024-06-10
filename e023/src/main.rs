@@ -8,7 +8,7 @@ const TOP: u64 = 28123;
 
 fn main() {
     let start = Instant::now();
-    fence(Ordering::Release);
+    fence(Ordering::AcqRel);
 
     let mut primes = Primes::<u64>::new();
 
@@ -51,6 +51,6 @@ fn main() {
     // release mode: 10s 626ms
     // debug mode: 7m 22s 270ms
 
-    fence(Ordering::Acquire); // prevent compiler tricks
+    fence(Ordering::AcqRel); // prevent compiler tricks
     println!("{}", format_duration(start.elapsed()));
 }

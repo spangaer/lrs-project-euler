@@ -286,6 +286,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "e024"
+version = "0.1.0"
+dependencies = [
+ "humantime",
+]
+
+[[package]]
 name = "e067"
 version = "0.1.0"
 dependencies = [
