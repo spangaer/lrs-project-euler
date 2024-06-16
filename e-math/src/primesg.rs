@@ -1,5 +1,6 @@
 use std::{
     cmp::max,
+    fmt::Debug,
     iter::Iterator,
     ops::RangeInclusive,
     sync::{
@@ -71,9 +72,8 @@ impl<T> Drop for Primes<T> {
     }
 }
 
-impl<T: Integer + Copy + From<u32> + TryFrom<usize> + Send + Sync + 'static> Primes<T>
-where
-    <T as TryFrom<usize>>::Error: std::fmt::Debug,
+impl<T: Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync + 'static>
+    Primes<T>
 {
     pub fn log(x: T, y: T) -> u32 {
         let mut res: u32 = 1;
@@ -335,10 +335,8 @@ pub struct PrimeIter<'a, T> {
     index: usize,
 }
 
-impl<T: Integer + Copy + From<u32> + TryFrom<usize> + Send + Sync + 'static> Iterator
+impl<T: Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync + 'static> Iterator
     for PrimeIter<'_, T>
-where
-    <T as TryFrom<usize>>::Error: std::fmt::Debug,
 {
     type Item = T;
 

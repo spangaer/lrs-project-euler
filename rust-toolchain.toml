@@ -1,0 +1,4 @@
+[toolchain]
+channel = "stable"
+date = "2024-06-16"
+profile = "default"
