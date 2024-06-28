@@ -37,13 +37,29 @@ fn main() {
 
             if sum >= target {
                 // adding more will not give new results, so short circuit state
+
+                // the state string that was 0 can all be jumped over
+                // because adding anything is pointless
+                for j in 0..i {
+                    if state[j] == 0 {
+                        state[j] = limit[j];
+                    } else {
+                        break;
+                    }
+                }
+
+                // no matter what 1p can always be jumped over
                 state[0] = limit[0];
             }
         }
 
         println!("{count}"); // 73682
 
+        // small short circuit
         // debug: 11s 388ms
         // release: 72ms 497us
+        // big short circuit
+        // debug: 1s 730ms
+        // release: 12ms 703us
     })
 }
