@@ -1,4 +1,7 @@
-use std::iter::{from_fn, Sum};
+use std::{
+    iter::{from_fn, Sum},
+    num::IntErrorKind,
+};
 
 use num::ToPrimitive;
 use num_integer::Integer;
@@ -32,6 +35,29 @@ pub fn digits<I: Integer + Clone + From<u8> + ToPrimitive + 'static>(
             None
         }
     })
+}
+
+pub fn num_from_digits<I: Integer + Clone + From<u8>>(digits: &[u8]) -> Result<I, IntErrorKind> {
+    let zero = I::zero();
+    let ten = I::zero() + 10.into();
+
+    let mut n = Ok(zero.clone());
+
+    digits.iter().for_each(|&d| match n.clone() {
+        Ok(nn) => {
+            let di: I = d.into();
+            let shift_add = ten.clone() * nn.clone() + di;
+            // overflow detection
+            if shift_add > nn {
+                n = Ok(shift_add);
+            } else {
+                n = Err(IntErrorKind::PosOverflow);
+            }
+        }
+        _ => (), // do nothing,
+    });
+
+    n
 }
 
 pub fn digit_sum<I: Integer + Clone + From<u8> + ToPrimitive + Sum + 'static>(i: &I) -> I {
