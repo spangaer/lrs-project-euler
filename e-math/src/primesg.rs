@@ -72,9 +72,17 @@ impl<T> Drop for Primes<T> {
     }
 }
 
-impl<T: Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync + 'static>
-    Primes<T>
+pub trait Pint:
+    Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync + 'static
 {
+}
+
+impl<T: Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync + 'static> Pint
+    for T
+{
+}
+
+impl<T: Pint> Primes<T> {
     pub fn log(x: T, y: T) -> u32 {
         let mut res: u32 = 1;
         let mut mult = y;
@@ -308,6 +316,40 @@ impl<T: Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync 
         })
     }
 
+    /// gcd is min power of each prime factor
+    pub fn gcd(&mut self, numbers: &[T]) -> T {
+        let factors = numbers
+            .iter()
+            .map(|&n| self.factorize_with_zeros(n))
+            .collect::<Vec<_>>();
+
+        let min_len = factors.iter().map(|fr| fr.len()).min().unwrap();
+
+        let mut gcd_factors = vec![];
+
+        for i in 0..min_len {
+            factors
+                .iter()
+                .map(|fr| &fr[i])
+                .fold::<Option<&(T, u32)>, _>(None, |current, other| {
+                    match (current, other) {
+                        (ox @ Some((_, x)), (_, y)) if x <= y => ox, // avoid new object
+                        (_, y) => Some(y),
+                    }
+                })
+                .iter()
+                .for_each(|&factor| {
+                    if factor.1 > 0 {
+                        gcd_factors.push(factor)
+                    }
+                });
+        }
+
+        gcd_factors.iter().fold(T::one(), |current, (prime, pow)| {
+            current * Self::pow(*prime, *pow)
+        })
+    }
+
     fn compute_divisors(series: &[(T, u32)]) -> Vec<T> {
         match series.len() {
             0 => vec![T::one()],
@@ -335,9 +377,7 @@ pub struct PrimeIter<'a, T> {
     index: usize,
 }
 
-impl<T: Integer + Copy + From<u32> + TryFrom<usize, Error: Debug> + Send + Sync + 'static> Iterator
-    for PrimeIter<'_, T>
-{
+impl<T: Pint> Iterator for PrimeIter<'_, T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
