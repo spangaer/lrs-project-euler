@@ -348,6 +348,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "e0033"
+version = "0.1.0"
+dependencies = [
+ "e-math",
+ "e-tools",
+ "itertools",
+]
+
+[[package]]
 name = "e0067"
 version = "0.1.0"
 dependencies = [
