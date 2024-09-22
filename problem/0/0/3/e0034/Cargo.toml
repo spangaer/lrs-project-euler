@@ -1,0 +1,8 @@
+[package]
+name = "e0034"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+e-math = { path = "../../../../../e-math" }
+e-tools = { path = "../../../../../e-tools" }
