@@ -273,9 +273,10 @@ impl<T: Pint> Primes<T> {
     }
 
     pub fn is_prime(&mut self, x: T) -> bool {
-        self.iterator()
+        !self
+            .iterator()
             .take_while(|&p| p * p <= x)
-            .all(|p| x % p != T::zero())
+            .any(|p| x % p == T::zero())
     }
 
     fn pow(t: T, exp: u32) -> T {

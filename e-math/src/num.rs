@@ -47,8 +47,9 @@ pub fn num_from_digits<I: Integer + Clone + From<u8>>(digits: &[u8]) -> Result<I
         Ok(nn) => {
             let di: I = d.into();
             let shift_add = ten.clone() * nn.clone() + di;
-            // overflow detection
-            if shift_add > nn {
+            // overflow detection, but allow a leading 0
+            let di: I = d.into();
+            if shift_add > nn || (nn == zero && di == zero) {
                 n = Ok(shift_add);
             } else {
                 n = Err(IntErrorKind::PosOverflow);
