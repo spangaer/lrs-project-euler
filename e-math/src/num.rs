@@ -18,6 +18,25 @@ pub fn fibonacci<I: Integer + Clone>() -> impl Iterator<Item = I> {
     })
 }
 
+pub fn bits<I: Integer + Clone + From<u8> + ToPrimitive + 'static>(
+    i: &I,
+) -> impl Iterator<Item = u8> {
+    let zero = I::zero();
+    let two = I::zero() + 2.into();
+
+    let mut n = i.clone();
+
+    from_fn(move || {
+        if n > zero {
+            let out = n.is_odd();
+            n = n.clone().div(two.clone());
+            Some(if out { 1 } else { 0 })
+        } else {
+            None
+        }
+    })
+}
+
 pub fn digits<I: Integer + Clone + From<u8> + ToPrimitive + 'static>(
     i: &I,
 ) -> impl Iterator<Item = u8> {
