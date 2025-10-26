@@ -1,3 +1,3 @@
-FROM mcr.microsoft.com/devcontainers/rust:1-1-bookworm
+FROM mcr.microsoft.com/devcontainers/rust:2-1-trixie
 
 RUN apt-get update && apt-get install -y cmake time
