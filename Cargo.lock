@@ -387,6 +387,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "e0038"
+version = "0.1.0"
+dependencies = [
+ "e-math",
+]
+
+[[package]]
 name = "e0067"
 version = "0.1.0"
 dependencies = [
